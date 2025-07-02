@@ -1,0 +1,461 @@
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+
+:root {
+    --clr-primary: #41f1b6;
+    --clr-danger: #ff7782;
+    --clr-success: #41f1b6;
+    --clr-white: #fff;
+    --clr-info-dark: #7d8da1;
+    --clr-info-light: #dce1eb;
+    --clr-dark: #363949;
+    --clr-warning: #ff43dc;
+    --clr-light: rgba(132, 139, 200, 0.18);
+    --clr-primary-variant: #111e88;
+    --clr-dark-variant: #677483;
+    --clr-color-background: #f6f6f9;
+
+    --card-border-raduis: 2rem;
+    --border-raduis-1: 0.4rem;
+    --border-raduis-2: 0.8rem;
+    --border-raduis-3: 1.2rem;
+
+    --card-padding: 1.8rem;
+    --padding-1: 1.2rem;
+    --box-shadow: 0 2rem 3rem var(--clr-light);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    list-style: none;
+    appearance: none;
+}
+
+body {
+    font-family: 'Kanit', sans-serif;
+    width: auto;
+    height: 100vh;
+    font-size: 0.88rem;
+    user-select: none;
+    overflow-x: hidden;
+    background: linear-gradient(45deg, #f6f6f9, #ebfaf6);
+}
+
+.container {
+    display: grid;
+    width: 100%;
+    gap: 1.8rem;
+    grid-template-columns: 14rem auto 14rem;
+    margin: 0 auto;
+    padding: 0 2% 0 0;
+}
+
+a {
+    color: var(--clr-dark);
+}
+
+h1 {
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+
+h2 {
+    font-size: 1.4rem;
+}
+
+h3 {
+    font-size: 0.87rem;
+}
+
+h4 {
+    font-size: 0.8;
+}
+
+h5 {
+    font-size: 0.77rem;
+}
+
+small {
+    font-size: 0.75rem
+}
+
+.text-muted {
+    color: var(--clr-info-dark);
+}
+
+p {
+    color: var(--clr-dark-variant);
+}
+
+b {
+    color: var(--clr-dark);
+}
+
+.primary {
+    color: var(--clr-primary);
+}
+
+.success {
+    color: var(--clr-success);
+}
+
+.logo {
+    color: var(--clr-dark);
+}
+
+.danger {
+    color: var(--clr-success);
+}
+
+.warning {
+    color: var(--clr-warning);
+}
+
+/* aside */
+
+aside {
+    height: 100vh;
+}
+
+aside .top {
+    background-color: var(--clr-white);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0 var(--card-border-raduis) 0 0;
+}
+
+aside .logo {
+    display: flex;
+    gap: 1rem;
+}
+
+/* *** sidebar *** */
+
+aside .sidebar {
+    background-color: var(--clr-white);
+    display: flex;
+    flex-direction: column;
+    height: 1025px;
+    border-radius: 0 0 var(--card-border-raduis) 0;
+}
+
+aside .h3 {
+    font-weight: 400;
+}
+
+aside .sidebar a {
+    display: flex;
+    /* background-color: var(--clr-white); */
+    color: var(--clr-info-dark);
+    margin-left: 0.5rem;
+    gap: 1rem;
+    align-items: center;
+    height: 3.2rem;
+    transition: all .1s ease-in;
+    width: auto;
+}
+
+aside .sidebar a span {
+    font-size: 1.6rem;
+    transition: all .1s ease-in;
+}
+
+aside .sidebar a:last-child {
+    position: absolute;
+    bottom: 1rem;
+    width: auto;
+}
+
+aside .sidebar a.active {
+    background: var(--clr-light);
+    color: var(--clr-primary);
+    margin-left: 0;
+    border-left: 5px solid var(--clr-primary);
+}
+
+aside .sidebar a.active::before {
+    content: '';
+    width: 6px;
+    height: 100%;
+    background-color: var(--clr-primary);
+}
+
+aside .sidebar a:hover {
+    color: var(--clr-primary);
+}
+
+aside .sidebar a:hover span {
+    margin-left: 1rem;
+    transition: .4s ease;
+}
+
+aside .sidebar a span.msg_count {
+    background: var(--clr-danger);
+    color: var(--clr-white);
+    padding: 2px 5px;
+    font-size: 11px;
+    border-radius: var(--border-raduis-1);
+}
+
+/* ************************* start main style ********************************* */
+
+main {
+    margin-top: 1.4rem;
+    width: auto;
+}
+
+main input {
+    background-color: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--clr-dark);
+}
+
+main .date-time {
+    display: inline-block;
+    background-color: var(--clr-white);
+    border-radius: var(--border-raduis-1);
+    margin-top: 1rem;
+    padding: 0.5rem 1.6rem;
+}
+
+main #timestamp {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    color: var(--clr-dark);
+}
+
+main .insights {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.5rem;
+}
+
+main .insights>div {
+    background-color: var(--clr-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-raduis);
+    margin-top: 1rem;
+    box-shadow: var(--box-shadow);
+    transition: all .3s ease;
+}
+
+main .insights>div:hover {
+    box-shadow: none;
+}
+
+main .insights>div span {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--clr-white);
+    font-size: 2rem;
+}
+
+main .insights>div.water span {
+    background: rgba(0, 123, 255, 1);
+}
+
+
+main .insights>div.temperature span {
+    background: rgba(255, 99, 132, 1);
+}
+
+main .insights>div.humidity span {
+    background: rgba(40, 167, 69, 1);
+}
+
+main .insights>div.light span {
+    background: rgba(255, 159, 64, 1);
+}
+
+main .insights>div.vibration span {
+    background: rgba(153, 102, 255, 1);
+}
+
+main .insights>div .middle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+main .insights>div .value {
+    display: flex;
+    gap: 5px;
+}
+
+main .insights>div .middle h1 {
+    font-size: 1.6rem;
+}
+
+main h1 {
+    color: var(--clr-dark)
+}
+
+main .insights h1 {
+    color: var(--clr-dark);
+}
+
+main .insights h3 {
+    color: var(--clr-dark);
+}
+
+main .insights p {
+    color: var(--clr-dark);
+}
+
+main .graph {
+    margin-top: 2rem;
+}
+
+main .graph h2 {
+    color: var(--clr-dark);
+}
+
+main canvas {
+    background-color: var(--clr-white);
+    /* width: auto; */
+    max-height: 580px;
+    border-radius: var(--card-border-raduis);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all .3s ease;
+    margin-top: 1rem;
+    cursor: pointer;
+}
+
+main canvas:hover {
+    box-shadow: none;
+}
+
+
+/* ***** start right section ***** */
+.right {
+    margin-top: 1.5rem;
+}
+
+.right h2 {
+    color: var(--clr-dark)
+}
+
+.control-btn-card {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background-color: var(--clr-white);
+    border-radius: var(--card-border-raduis);
+    justify-content: center;
+    box-shadow: var(--box-shadow);
+    transition: all .3s ease;
+}
+
+.control-btn-card:hover {
+    box-shadow: none;
+}
+
+.control-btn-box {
+    display: flex;
+    align-items: center;
+    border-radius: var(--border-raduis-3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.active {
+    background: var(--clr-primary);
+    color: var(--clr-white);
+}
+
+.inactive {
+    background: transparent;
+    color: var(--clr-dark);
+}
+
+.light-control {
+    margin-top: 1.5rem;
+}
+
+.dam-gate-control {
+    margin-top: 1.5rem;
+}
+
+.status-box {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    color: var(--clr-white);
+    font-size: 2rem;
+}
+
+.status.led {
+    background-color: rgba(255, 159, 64, 1);
+}
+
+.status.servo-motor {
+    background-color: rgba(0, 123, 255, 1);
+}
+
+.control-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.led-btn {
+    background: rgba(255, 159, 64, 1);
+    color: var(--clr-white);
+}
+
+.servo-btn {
+    background: rgba(0, 123, 255, 1);
+    color: var(--clr-white);
+}
+
+button:disabled {
+    background-color: #ccc !important;
+    color: #666 !important;
+    cursor: not-allowed;
+}
+
+#lightText {
+    color: var(--clr-dark);
+}
+
+#gateText {
+    color: var(--clr-dark);
+}
