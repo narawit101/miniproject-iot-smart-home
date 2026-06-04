@@ -142,6 +142,7 @@ aside .sidebar {
     flex-direction: column;
     height: 1025px;
     border-radius: 0 0 var(--card-border-raduis) 0;
+    position: relative;
 }
 
 aside .h3 {

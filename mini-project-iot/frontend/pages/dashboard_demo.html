@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DPI Dashboard (Offline Demo)</title>
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Sharp:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Real-time Error Diagnostic Console -->
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error("Diagnostic error caught:", e);
+            const consoleEl = document.getElementById('demoErrorConsole');
+            const textEl = document.getElementById('demoErrorText');
+            if (consoleEl && textEl) {
+                consoleEl.style.display = 'block';
+                textEl.textContent += e.message + '\nFile: ' + e.filename + '\nLine: ' + e.lineno + '\n\n';
+            }
+        });
+    </script>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Standalone fallback animations from index.css for completeness */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake {
+            animation: shake 0.2s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        .blinking {
+            animation: blink 1.5s infinite;
+        }
+
+        /* Force canvas/svg container height to display properly in offline browser view */
+        #chartContainer {
+            width: 100%;
+            height: 380px;
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        canvas#myChart, svg#mySvgChart {
+            width: 100% !important;
+            height: 100% !important;
+            background-color: var(--clr-white);
+            border-radius: var(--card-border-raduis);
+            padding: var(--card-padding);
+            box-shadow: var(--box-shadow);
+            display: block;
+        }
+
+        /* Keep status box spacing tidy */
+        .status-box {
+            margin-top: 10px;
+            display: block;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--clr-dark-variant);
+        }
+
+        /* Bind absolute logout button to the sidebar to stop it from drifting */
+        aside .sidebar {
+            position: relative;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Diagnostic Box -->
+    <div id="demoErrorConsole" style="display: none; background-color: #f44336; color: white; padding: 15px; font-family: monospace; font-size: 14px; z-index: 10001; position: relative; border-radius: 8px; margin: 10px;">
+        <strong>⚠️ JavaScript Error Detected inside dashboard_demo.html:</strong>
+        <pre id="demoErrorText" style="margin-top: 10px; white-space: pre-wrap; font-family: monospace;"></pre>
+    </div>
+
+    <div class="container">
+        <!-- aside section start -->
+        <aside>
+            <div class="top">
+                <div class="logo">
+                    <h2>DPI<span class="danger">DASHBOARD</span></h2>
+                </div>
+            </div>
+            <!-- end top -->
+            <div class="sidebar">
+                <a href="#" class="active">
+                    <span class="material-symbols-sharp">grid_view</span>
+                    <h3>Dashboard</h3>
+                </a>
+
+                <a href="#" onclick="alert('Demo Mode: Logout clicked')">
+                    <span class="material-symbols-sharp">logout</span>
+                    <h3>logout</h3>
+                </a>
+            </div>
+        </aside>
+        <!-- aside section end -->
+
+        <!-- main section start  -->
+        <main>
+            <h1>Dashboard</h1>
+            <div class="date-time">
+                <div id="timestamp"> เวลาปัจจุบัน: <div class="data" id="current-time">--:--:--</div>
+                </div>
+            </div>
+            <div class="insights">
+
+                <!-- start water -->
+                <div class="water">
+                    <span class="material-symbols-sharp">water</span>
+                    <div class="middle">
+                        <div class="left" id="waterLevel">
+                            <h3>Water Level</h3>
+                            <div class="value">
+                                <h1 class="data">...</h1>
+                                <h1 class="tail">M</h1>
+                            </div>
+                            <small class="status-box"></small>
+                        </div>
+                    </div>
+                </div>
+                <!-- end water -->
+
+                <!-- start temperature -->
+                <div class="temperature">
+                    <span class="material-symbols-sharp">thermometer</span>
+                    <div class="middle">
+                        <div class="left" id="temperature">
+                            <h3>Temperature</h3>
+                            <div class="value">
+                                <h1 class="data">...</h1>
+                                <h1 class="tail">°C</h1>
+                            </div>
+                            <small class="status-box"></small>
+                        </div>
+                    </div>
+                </div>
+                <!-- end tamperature -->
+
+                <!-- start humidity -->
+                <div class="humidity">
+                    <span class="material-symbols-sharp">humidity_low</span>
+                    <div class="middle">
+                        <div class="left" id="humidity">
+                            <h3>Humidity</h3>
+                            <div class="value">
+                                <h1 class="data">...</h1>
+                                <h1 class="tail">%</h1>
+                            </div>
+                            <small class="status-box"></small>
+                        </div>
+                    </div>
+                </div>
+                <!-- end humidity -->
+
+                <!-- start light -->
+                <div class="light">
+                    <span class="material-symbols-sharp">light</span>
+                    <div class="middle">
+                        <div class="left" id="light">
+                            <h3>Light</h3>
+                            <div class="value">
+                                <h1 class="data">...</h1>
+                                <h1 class="tail">%</h1>
+                            </div>
+                            <small class="status-box"></small>
+                        </div>
+                    </div>
+                </div>
+                <!-- end light -->
+
+                <!-- start vibration -->
+                <div class="vibration">
+                    <span class="material-symbols-sharp">earthquake</span>
+                    <div class="middle">
+                        <div class="left" id="vibration">
+                            <h3>Vibration</h3>
+                            <div class="value">
+                                <h1 class="data">...</h1>
+                                <h1 class="tail">Mw</h1>
+                            </div>
+                            <small class="status-box"></small>
+                        </div>
+                    </div>
+                </div>
+                <!-- end vibration -->
+            </div>
+            <!-- end inside -->
+
+            <!-- start graph -->
+            <div class="graph">
+                <h1>Graph</h1>
+                <div id="chartContainer">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+            <!-- end graph -->
+
+        </main>
+        <!-- main section end -->
+
+        <!-- right section start -->
+        <div class="right">
+            <div class="select-mode">
+                <h2>Select Mode</h2>
+                <div class="control-btn-card">
+                    <div class="control-btn-box">
+                        <button class="mode-btn active" id="manualBtn" onclick="toggleMode('manual')">Manual</button>
+                        <button class="mode-btn inactive" id="sensorBtn" onclick="toggleMode('sensor')">Sensor</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="light-control">
+                    <h2>Light Control</h2>
+                    <div class="control-btn-card">
+                        <div class="status-box" style="box-shadow: none; padding: 0; background: transparent; margin-top: 0;">
+                            <p id="lightStatus" class="status led">
+                                <span class="material-icons">lightbulb_outline</span>
+                            </p>
+                            <h5 id="lightText">Light: Off</h5>
+                        </div>
+                        <div class="control-btn-box">
+                            <button class="control-btn led-btn" id="ledOnBtn" onclick="toggleLED('on')">เปิด LED</button>
+                            <button class="control-btn led-btn" id="ledOffBtn" onclick="toggleLED('off')">ปิด LED</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dam-gate-control">
+                    <h2>Dam Gate Control</h2>
+                    <div class="control-btn-card">
+                        <div class="status-box" style="box-shadow: none; padding: 0; background: transparent; margin-top: 0;">
+                            <p id="gateStatus" class="status servo-motor">
+                                <span class="material-icons">door_front</span>
+                            </p>
+                            <h5 id="gateText">Dam Gate: Close</h5>
+                        </div>
+                        <div class="control-btn-box">
+                            <button class="control-btn servo-btn" id="openGateBtn" onclick="setServoAngle('50')">เปิด ประตู</button>
+                            <button class="control-btn servo-btn" id="closeGateBtn" onclick="setServoAngle('0')">ปิด ประตู</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- end right section -->
+    </div>
+
+    <!-- MOCKED TELEMETRY & FALLBACK GRAPH SCRIPT -->
+    <script>
+        // --- Global State Variables ---
+        let currentMode = "manual";
+
+        // --- 1. Clock Logic ---
+        function updateCurrentTime() {
+            const currentTime = new Date().toLocaleString("th-TH", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+            });
+            document.getElementById("current-time").textContent = currentTime;
+        }
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        // --- 2. Live Telemetry Rendering (Mocking data.js) ---
+        const sensorValues = {
+            waterLevel: 15.5,
+            temperature: 28.4,
+            humidity: 52.0,
+            light: 75.0,
+            vibration: 1.2
+        };
+
+        function fetchData() {
+            // Simulated minor fluctuations
+            sensorValues.waterLevel = Math.max(2, (sensorValues.waterLevel + (Math.random() - 0.5) * 0.4));
+            sensorValues.temperature = Math.max(10, (sensorValues.temperature + (Math.random() - 0.5) * 0.2));
+            sensorValues.humidity = Math.min(100, Math.max(10, (sensorValues.humidity + (Math.random() - 0.5) * 0.5)));
+            sensorValues.light = Math.min(100, Math.max(0, (sensorValues.light + (Math.random() - 0.5) * 1.5)));
+            sensorValues.vibration = Math.max(0.1, (sensorValues.vibration + (Math.random() - 0.5) * 0.1));
+
+            // Set text contents
+            document.querySelector("#waterLevel .data").textContent = sensorValues.waterLevel.toFixed(1);
+            document.querySelector("#temperature .data").textContent = sensorValues.temperature.toFixed(1);
+            document.querySelector("#humidity .data").textContent = sensorValues.humidity.toFixed(1);
+            document.querySelector("#light .data").textContent = sensorValues.light.toFixed(1);
+            document.querySelector("#vibration .data").textContent = sensorValues.vibration.toFixed(1);
+
+            updateSensorStyles(sensorValues);
+            
+            // If Sensor mode is active, trigger automated overrides
+            if (currentMode === "sensor") {
+                if (sensorValues.light < 30) {
+                    toggleLED_DOM("on");
+                } else {
+                    toggleLED_DOM("off");
+                }
+                
+                if (sensorValues.waterLevel > 20) {
+                    setServoAngle_DOM("50");
+                } else if (sensorValues.waterLevel < 10) {
+                    setServoAngle_DOM("0");
+                }
+            }
+        }
+
+        function updateSensorStyles(values) {
+            const sensors = {
+                waterLevel: document.querySelector("#waterLevel"),
+                temperature: document.querySelector("#temperature"),
+                humidity: document.querySelector("#humidity"),
+                light: document.querySelector("#light"),
+                vibration: document.querySelector("#vibration"),
+            };
+
+            // Water Level threshold rules
+            if (values.waterLevel >= 40) {
+                sensors.waterLevel.querySelector(".status-box").textContent = "Danger Flood !!! 🌊";
+            } else if (values.waterLevel >= 35) {
+                sensors.waterLevel.querySelector(".status-box").textContent = "Warning Flood 🌊";
+            } else {
+                sensors.waterLevel.querySelector(".status-box").textContent = "Normal ⛲️";
+            }
+
+            // Temp threshold rules
+            if (values.temperature >= 35) {
+                sensors.temperature.querySelector(".status-box").textContent = "Hot !!! 🌡️";
+            } else if (values.temperature >= 28) {
+                sensors.temperature.querySelector(".status-box").textContent = "Warm 🌞";
+            } else if (values.temperature > 15) {
+                sensors.temperature.querySelector(".status-box").textContent = "The Weather is Good 🌬️";
+            } else {
+                sensors.temperature.querySelector(".status-box").textContent = "Cold ☃️˚";
+            }
+
+            // Humidity threshold rules
+            if (values.humidity >= 75) {
+                sensors.humidity.querySelector(".status-box").textContent = "It will Rain !!! 🌦️";
+            } else if (values.humidity >= 50) {
+                sensors.humidity.querySelector(".status-box").textContent = "Very Humid ☁";
+            } else {
+                sensors.humidity.querySelector(".status-box").textContent = "Clearing Up ✨";
+            }
+
+            // Light threshold rules
+            if (values.light >= 70) {
+                sensors.light.querySelector(".status-box").textContent = "Shine 🌟";
+            } else if (values.light >= 40) {
+                sensors.light.querySelector(".status-box").textContent = "Medium Light ✨";
+            } else {
+                sensors.light.querySelector(".status-box").textContent = "Very Dark !!! 🌑";
+            }
+
+            if (values.light <= 30) {
+                document.querySelector("#light .status-box").classList.add("blinking");
+            } else {
+                document.querySelector("#light .status-box").classList.remove("blinking");
+            }
+
+            // Vibration threshold rules
+            if (values.vibration >= 10) {
+                document.querySelector("#vibration .status-box").classList.add("shake");
+                setTimeout(() => {
+                    document.querySelector("#vibration .status-box").classList.remove("shake");
+                }, 2000);
+            }
+            if (values.vibration >= 5) {
+                sensors.vibration.querySelector(".status-box").textContent = "Danger !!! Earthquake ♒︎";
+            } else {
+                sensors.vibration.querySelector(".status-box").textContent = "Normal 〰";
+            }
+        }
+
+        setInterval(fetchData, 2000);
+        fetchData();
+
+        // --- 3. Interactive Actuators Controls (Mocking control.js) ---
+
+        function toggleMode(mode) {
+            currentMode = mode;
+            let manualBtn = document.getElementById("manualBtn");
+            let sensorBtn = document.getElementById("sensorBtn");
+
+            if (mode === "manual") {
+                manualBtn.classList.add("active");
+                manualBtn.classList.remove("inactive");
+
+                sensorBtn.classList.add("inactive");
+                sensorBtn.classList.remove("active");
+
+                setControlsEnabled(true);
+            } else {
+                sensorBtn.classList.add("active");
+                sensorBtn.classList.remove("inactive");
+
+                manualBtn.classList.add("inactive");
+                manualBtn.classList.remove("active");
+
+                setControlsEnabled(false);
+            }
+        }
+
+        function setControlsEnabled(enabled) {
+            document.getElementById("ledOnBtn").disabled = !enabled;
+            document.getElementById("ledOffBtn").disabled = !enabled;
+            document.getElementById("openGateBtn").disabled = !enabled;
+            document.getElementById("closeGateBtn").disabled = !enabled;
+        }
+
+        function toggleLED(state) {
+            toggleLED_DOM(state);
+        }
+
+        function toggleLED_DOM(state) {
+            let lightIcon = document.getElementById("lightStatus").querySelector(".material-icons");
+            let lightText = document.getElementById("lightText");
+
+            if (state === "on") {
+                lightIcon.textContent = "lightbulb";
+                lightText.textContent = "Light: On";
+            } else {
+                lightIcon.textContent = "lightbulb_outline";
+                lightText.textContent = "Light: Off";
+            }
+        }
+
+        function setServoAngle(angle) {
+            setServoAngle_DOM(angle);
+        }
+
+        function setServoAngle_DOM(angle) {
+            let gateIcon = document.getElementById("gateStatus").querySelector(".material-icons");
+            let gateText = document.getElementById("gateText");
+
+            if (angle === "50") {
+                gateIcon.textContent = "meeting_room";
+                gateText.textContent = "Dam Gate: Open";
+            } else {
+                gateIcon.textContent = "door_front";
+                gateText.textContent = "Dam Gate: Close";
+            }
+        }
+
+        // --- 4. Historical Telemetry Arrays ---
+        const maxTicks = 20;
+        const initialLabels = [];
+        const waterData = [];
+        const tempData = [];
+        const humidData = [];
+        const lightData = [];
+        const vibData = [];
+        let startMockTime = new Date(Date.now() - maxTicks * 2000);
+
+        for (let i = 0; i < maxTicks; i++) {
+            const time = new Date(startMockTime.getTime() + i * 2000);
+            initialLabels.push(time.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+            waterData.push(14 + Math.sin(i * 0.4) * 2 + Math.random() * 0.3);
+            tempData.push(27 + Math.sin(i * 0.2) * 1 + Math.random() * 0.2);
+            humidData.push(51 + Math.cos(i * 0.3) * 2 + Math.random() * 0.4);
+            lightData.push(72 + Math.sin(i * 0.5) * 6 + Math.random() * 1.0);
+            vibData.push(1.0 + Math.random() * 0.3);
+        }
+
+        // --- 5. Chart Rendering Initialization (Supports Offline SVG Fallback) ---
+        let myChartInstance = null;
+        let isUsingSvgChart = false;
+
+        // Diagnostic Check to see if Chart is defined
+        console.log("Chart type check:", typeof Chart);
+
+        try {
+            if (typeof Chart !== 'undefined' && Chart !== null) {
+                // RENDER USING CHART.JS
+                console.log("Chart.js loaded. Setting up canvas chart.");
+                const ctx = document.getElementById("myChart").getContext("2d");
+
+                const gradientBlue = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientBlue.addColorStop(0, "rgba(0, 123, 255, 0.4)");
+                gradientBlue.addColorStop(1, "rgba(0, 123, 255, 0.05)");
+
+                const gradientRed = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientRed.addColorStop(0, "rgba(255, 99, 132, 0.4)");
+                gradientRed.addColorStop(1, "rgba(255, 99, 132, 0.05)");
+
+                const gradientGreen = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientGreen.addColorStop(0, "rgba(40, 167, 69, 0.4)");
+                gradientGreen.addColorStop(1, "rgba(40, 167, 69, 0.05)");
+
+                const gradientOrange = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientOrange.addColorStop(0, "rgba(255, 159, 64, 0.4)");
+                gradientOrange.addColorStop(1, "rgba(255, 159, 64, 0.05)");
+
+                const gradientPurple = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientPurple.addColorStop(0, "rgba(153, 102, 255, 0.4)");
+                gradientPurple.addColorStop(1, "rgba(153, 102, 255, 0.05)");
+
+                myChartInstance = new Chart(ctx, {
+                    type: "line",
+                    data: {
+                        labels: initialLabels,
+                        datasets: [
+                            {
+                                label: "Water Level",
+                                data: waterData,
+                                borderColor: "rgba(0, 123, 255, 1)",
+                                backgroundColor: gradientBlue,
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: "Temperature",
+                                data: tempData,
+                                borderColor: "rgba(255, 99, 132, 1)",
+                                backgroundColor: gradientRed,
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: "Humidity",
+                                data: humidData,
+                                borderColor: "rgba(40, 167, 69, 1)",
+                                backgroundColor: gradientGreen,
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: "Light",
+                                data: lightData,
+                                borderColor: "rgba(255, 159, 64, 1)",
+                                backgroundColor: gradientOrange,
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                            },
+                            {
+                                label: "Vibration",
+                                data: vibData,
+                                borderColor: "rgba(153, 102, 255, 1)",
+                                backgroundColor: gradientPurple,
+                                fill: true,
+                                tension: 0.4,
+                                borderWidth: 2,
+                                pointRadius: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: "GRAPH SENSOR DATA (DEMO STREAM)",
+                                font: { size: 16, weight: "bold" },
+                                color: "#333",
+                            },
+                            legend: {
+                                display: true,
+                                position: "top",
+                                labels: {
+                                    font: { size: 14, weight: "bold" },
+                                    color: "#555",
+                                    usePointStyle: true,
+                                    pointStyle: "circle",
+                                },
+                            },
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: "TIME",
+                                    color: "#555",
+                                    font: { size: 13, weight: "bold" },
+                                },
+                                ticks: { color: "#333", font: { size: 10 } },
+                                grid: { color: "rgba(200, 200, 200, 0.2)", lineWidth: 1 },
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: "VALUES",
+                                    color: "#555",
+                                    font: { size: 13, weight: "bold" },
+                                },
+                                ticks: { color: "#333", font: { size: 10 } },
+                                grid: { color: "rgba(200, 200, 200, 0.2)", lineWidth: 1 },
+                            },
+                        },
+                        animation: false,
+                        interaction: { mode: "nearest", intersect: false },
+                    },
+                });
+            } else {
+                throw new Error("Chart library not loaded");
+            }
+        } catch (err) {
+            console.warn("Chart.js failed initialization:", err.message);
+            // FALLBACK TO EMBEDDED PURE SVG REALTIME GRAPH
+            setupSvgFallback();
+        }
+
+        function setupSvgFallback() {
+            isUsingSvgChart = true;
+            const chartContainer = document.getElementById("chartContainer");
+            chartContainer.innerHTML = `
+                <svg id="mySvgChart" viewBox="0 0 800 350" style="width: 100%; height: 100%;">
+                    <defs>
+                        <linearGradient id="svgGradBlue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(0, 123, 255, 0.5)"/>
+                            <stop offset="100%" stop-color="rgba(0, 123, 255, 0.0)"/>
+                        </linearGradient>
+                        <linearGradient id="svgGradRed" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(255, 99, 132, 0.5)"/>
+                            <stop offset="100%" stop-color="rgba(255, 99, 132, 0.0)"/>
+                        </linearGradient>
+                        <linearGradient id="svgGradGreen" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(40, 167, 69, 0.5)"/>
+                            <stop offset="100%" stop-color="rgba(40, 167, 69, 0.0)"/>
+                        </linearGradient>
+                        <linearGradient id="svgGradOrange" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(255, 159, 64, 0.5)"/>
+                            <stop offset="100%" stop-color="rgba(255, 159, 64, 0.0)"/>
+                        </linearGradient>
+                        <linearGradient id="svgGradPurple" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="rgba(153, 102, 255, 0.5)"/>
+                            <stop offset="100%" stop-color="rgba(153, 102, 255, 0.0)"/>
+                        </linearGradient>
+                    </defs>
+                    
+                    <!-- Graph Title -->
+                    <text x="400" y="25" text-anchor="middle" font-family="Kanit" font-size="16" font-weight="bold" fill="#333">GRAPH SENSOR DATA (SVG OFFLINE STREAM)</text>
+                    
+                    <!-- Legend -->
+                    <g transform="translate(100, 45)" font-family="Kanit" font-size="11" font-weight="bold">
+                        <circle cx="0" cy="0" r="5" fill="rgba(0, 123, 255, 1)" />
+                        <text x="10" y="4" fill="#555">Water Level</text>
+                        
+                        <circle cx="120" cy="0" r="5" fill="rgba(255, 99, 132, 1)" />
+                        <text x="130" y="4" fill="#555">Temperature</text>
+                        
+                        <circle cx="240" cy="0" r="5" fill="rgba(40, 167, 69, 1)" />
+                        <text x="250" y="4" fill="#555">Humidity</text>
+                        
+                        <circle cx="360" cy="0" r="5" fill="rgba(255, 159, 64, 1)" />
+                        <text x="370" y="4" fill="#555">Light</text>
+                        
+                        <circle cx="480" cy="0" r="5" fill="rgba(153, 102, 255, 1)" />
+                        <text x="490" y="4" fill="#555">Vibration</text>
+                    </g>
+
+                    <!-- Grid Lines & Y-Labels -->
+                    <g stroke="rgba(200,200,200,0.3)" stroke-width="1" stroke-dasharray="3,3">
+                        <line x1="50" y1="70" x2="770" y2="70" />
+                        <line x1="50" y1="130" x2="770" y2="130" />
+                        <line x1="50" y1="190" x2="770" y2="190" />
+                        <line x1="50" y1="250" x2="770" y2="250" />
+                        <line x1="50" y1="310" x2="770" y2="310" />
+                    </g>
+
+                    <g font-family="Kanit" font-size="10" fill="#666" text-anchor="end">
+                        <text x="42" y="73">100</text>
+                        <text x="42" y="133">75</text>
+                        <text x="42" y="193">50</text>
+                        <text x="42" y="253">25</text>
+                        <text x="42" y="313">0</text>
+                    </g>
+                    
+                    <!-- Solid Border Lines -->
+                    <line x1="50" y1="70" x2="50" y2="310" stroke="#ccc" stroke-width="1.5" />
+                    <line x1="50" y1="310" x2="770" y2="310" stroke="#ccc" stroke-width="1.5" stroke-dasharray="none" />
+
+                    <!-- Datasets Fills (polygons) -->
+                    <polygon id="svgFillWater" fill="url(#svgGradBlue)" points="" />
+                    <polygon id="svgFillTemp" fill="url(#svgGradRed)" points="" />
+                    <polygon id="svgFillHumid" fill="url(#svgGradGreen)" points="" />
+                    <polygon id="svgFillLight" fill="url(#svgGradOrange)" points="" />
+                    <polygon id="svgFillVib" fill="url(#svgGradPurple)" points="" />
+
+                    <!-- Datasets Lines (polylines) -->
+                    <polyline id="svgLineWater" fill="none" stroke="rgba(0, 123, 255, 1)" stroke-width="2.5" points="" />
+                    <polyline id="svgLineTemp" fill="none" stroke="rgba(255, 99, 132, 1)" stroke-width="2.5" points="" />
+                    <polyline id="svgLineHumid" fill="none" stroke="rgba(40, 167, 69, 1)" stroke-width="2.5" points="" />
+                    <polyline id="svgLineLight" fill="none" stroke="rgba(255, 159, 64, 1)" stroke-width="2.5" points="" />
+                    <polyline id="svgLineVib" fill="none" stroke="rgba(153, 102, 255, 1)" stroke-width="2.5" points="" />
+
+                    <!-- Dynamic Time Labels -->
+                    <g id="svgTimeLabels" font-family="Kanit" font-size="9" fill="#666" text-anchor="middle"></g>
+                </svg>
+            `;
+            drawSvgChart();
+        }
+
+        // SVG Render logic helper
+        function drawSvgChart() {
+            if (!isUsingSvgChart) return;
+            
+            const svgWidth = 720; // 770 - 50
+            const svgHeight = 240; // 310 - 70
+            const startX = 50;
+            const startY = 310;
+
+            const mapValueToY = (value, maxVal) => {
+                const ratio = Math.min(1.0, value / maxVal);
+                return startY - (ratio * svgHeight);
+            };
+
+            const pointsWater = [];
+            const pointsTemp = [];
+            const pointsHumid = [];
+            const pointsLight = [];
+            const pointsVib = [];
+
+            // Generate points coordinates string
+            for (let i = 0; i < maxTicks; i++) {
+                const x = startX + (i / (maxTicks - 1)) * svgWidth;
+                
+                // Map values: Water Level (max 50), Temp (max 40), Humidity (max 100), Light (max 100), Vib (max 10)
+                pointsWater.push(`${x},${mapValueToY(waterData[i], 50)}`);
+                pointsTemp.push(`${x},${mapValueToY(tempData[i], 40)}`);
+                pointsHumid.push(`${x},${mapValueToY(humidData[i], 100)}`);
+                pointsLight.push(`${x},${mapValueToY(lightData[i], 100)}`);
+                pointsVib.push(`${x},${mapValueToY(vibData[i], 10)}`);
+            }
+
+            // Set polylines
+            document.getElementById("svgLineWater").setAttribute("points", pointsWater.join(" "));
+            document.getElementById("svgLineTemp").setAttribute("points", pointsTemp.join(" "));
+            document.getElementById("svgLineHumid").setAttribute("points", pointsHumid.join(" "));
+            document.getElementById("svgLineLight").setAttribute("points", pointsLight.join(" "));
+            document.getElementById("svgLineVib").setAttribute("points", pointsVib.join(" "));
+
+            // Set polygon area fills (need to close path at the baseline)
+            const closePath = (points) => `${startX},${startY} ` + points.join(" ") + ` ${startX + svgWidth},${startY}`;
+            document.getElementById("svgFillWater").setAttribute("points", closePath(pointsWater));
+            document.getElementById("svgFillTemp").setAttribute("points", closePath(pointsTemp));
+            document.getElementById("svgFillHumid").setAttribute("points", closePath(pointsHumid));
+            document.getElementById("svgFillLight").setAttribute("points", closePath(pointsLight));
+            document.getElementById("svgFillVib").setAttribute("points", closePath(pointsVib));
+
+            // Set X labels at bottom (draw every 4th tick)
+            const labelsGroup = document.getElementById("svgTimeLabels");
+            let labelsHtml = "";
+            for (let i = 0; i < maxTicks; i += 4) {
+                const x = startX + (i / (maxTicks - 1)) * svgWidth;
+                labelsHtml += `<text x="${x}" y="330">${initialLabels[i]}</text>`;
+            }
+            labelsGroup.innerHTML = labelsHtml;
+        }
+
+        // --- 6. Tick Fetcher Update Loop ---
+        function fetchSensorData() {
+            // Append current values to graph
+            const now = new Date();
+            const labelStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            initialLabels.shift();
+            initialLabels.push(labelStr);
+
+            waterData.shift();
+            waterData.push(sensorValues.waterLevel);
+
+            tempData.shift();
+            tempData.push(sensorValues.temperature);
+
+            humidData.shift();
+            humidData.push(sensorValues.humidity);
+
+            lightData.shift();
+            lightData.push(sensorValues.light);
+
+            vibData.shift();
+            vibData.push(sensorValues.vibration);
+
+            if (isUsingSvgChart) {
+                drawSvgChart();
+            } else if (myChartInstance) {
+                myChartInstance.update();
+            }
+        }
+
+        setInterval(fetchSensorData, 500); // Poll chart updates every 500ms
+    </script>
+</body>
+
+</html>
